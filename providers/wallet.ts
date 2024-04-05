@@ -8,7 +8,7 @@ const accountFile = parsed?.ACCOUNT_FILE;
 const accountFilePassword = parsed?.ACCOUNT_FILE_PASSWORD;
 
 const getWallet = () => {
-  if (privateKey && accountFile) {
+  if (privateKey === undefined && accountFile === undefined) {
     throw new Error('You must provide only one of the following: private key or encrypted account file');
   }
 
@@ -18,12 +18,11 @@ const getWallet = () => {
 
   if (accountFile) {
     if (!accountFilePassword) {
-      throw new Error('Account file password is not provided');
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const fileContent = require(accountFile);
+      return Wallet.fromEncryptedJsonSync(JSON.stringify(fileContent), accountFilePassword).connect(provider);
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fileContent = require(accountFile);
-    return Wallet.fromEncryptedJsonSync(JSON.stringify(fileContent), accountFilePassword).connect(provider);
   }
 
   throw new Error('Private key or encrypted account file is not provided');
